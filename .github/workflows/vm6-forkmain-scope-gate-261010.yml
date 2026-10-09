@@ -1,0 +1,43 @@
+name: VM6 Fork Main Ref Integrity 261010
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  detect-scopes:
+    runs-on: ubuntu-24.04
+    outputs:
+      critical: ${{ fromJSON(steps.scopes.outputs.scopes).critical }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Detect critical files with Mergify CLI
+        id: scopes
+        uses: Mergifyio/gha-mergify-ci@v26
+        with:
+          action: scopes
+          mergify_cli_version: 2026.10.5
+          base: ${{ github.base_ref }}
+          head: ${{ github.head_ref }}
+  critical-gate:
+    name: vm6-refbind-critical-gate
+    needs: detect-scopes
+    if: ${{ needs.detect-scopes.outputs.critical == 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Inert deterministic scope canary
+        run: |
+          echo VM6_CRITICAL_FILE_REQUIRES_REVIEW
+          exit 1
+  required-gate:
+    name: vm6-refbind-required
+    if: ${{ always() }}
+    needs: [detect-scopes, critical-gate]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Enforce all scope checks
+        run: |
+          test '${{ needs.detect-scopes.result }}' = 'success'
+          test '${{ needs.critical-gate.result }}' != 'failure'
+          test '${{ needs.critical-gate.result }}' != 'cancelled'
