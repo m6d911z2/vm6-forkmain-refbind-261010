@@ -1,12 +1,22 @@
+pull_request_rules:
+- name: VM6 natural fork main required-check bot merge 261010
+  conditions:
+  - base = main
+  - title = VM6_FORKMAIN_TREATMENT_261010
+  - author = livastic-vm6-primary-20260911
+  - check-success = @github-actions/vm6-refbind-required
+  actions:
+    merge:
+      method: merge
 scopes:
   source:
     files:
       lane:
         include:
-          - lane/**
+        - lane/**
       critical:
         include:
-          - critical/**
+        - critical/**
   capacities:
     lane: 1
     critical: 1
