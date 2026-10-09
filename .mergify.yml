@@ -1,0 +1,12 @@
+scopes:
+  source:
+    files:
+      lane:
+        include:
+          - lane/**
+      critical:
+        include:
+          - critical/**
+  capacities:
+    lane: 1
+    critical: 1
